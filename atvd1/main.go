@@ -2,6 +2,7 @@ package main
 
 import (
 	"atvd1/functions"
+	"atvd1/utils"
 	"fmt"
 	"math"
 	"math/rand"
@@ -16,12 +17,26 @@ var (
 	mutex    sync.Mutex
 )
 
+var times []int64
+
 func main() {
 
+	numTries := 1000
+
+	for i := 0; i < numTries; i++ {
+		run()
+	}
+
+	fmt.Printf("%vµs\n", utils.GetMean(times))
+
+}
+
+func run() {
 	numRoutines := 1
-	fmt.Printf("Using %d goroutines\n", numRoutines)
+	//fmt.Printf("Using %d goroutines\n", numRoutines)
 
 	finished = false
+	s = 1
 	var wg sync.WaitGroup
 	wg.Add(numRoutines)
 
@@ -38,6 +53,7 @@ func solve(wg *sync.WaitGroup, id int) {
 	size := 9
 
 	board := setUpBoard(size, []int{3, 0, 6, 5, 0, 8, 4, 0, 0, 5, 2, 0, 0, 0, 0, 0, 0, 0, 0, 8, 7, 0, 0, 0, 0, 3, 1, 0, 0, 3, 0, 1, 0, 0, 8, 0, 9, 0, 0, 8, 6, 3, 0, 0, 5, 0, 5, 0, 0, 9, 0, 6, 0, 0, 1, 3, 0, 0, 0, 0, 2, 5, 0, 0, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 5, 2, 0, 6, 3, 0, 0})
+
 	i, j, value := getRandomValues(size)
 	// printInitial(i, j, value, id)
 
@@ -162,7 +178,8 @@ func printTime(start, end time.Time) {
 	if s == 1 {
 		s = 0
 
-		fmt.Printf("Time taken: %v\n", end.Sub(start))
+		times = append(times, end.Sub(start).Microseconds())
+		//fmt.Printf("%v\n", end.Sub(start))
 	}
 }
 

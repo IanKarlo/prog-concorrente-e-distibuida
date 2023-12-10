@@ -18,6 +18,8 @@ var (
 
 var times []int64
 
+const FULL_BIT_MASK = 511
+
 func getSectorByRowAndColumn(row, col, size int) int {
 
 	litteSquare := 3 //int(math.Sqrt(float64(size))) //3 depois muda pra melhorar o desepenho, qlqr coisa conta aqui irmão
@@ -25,7 +27,7 @@ func getSectorByRowAndColumn(row, col, size int) int {
 	return col/litteSquare + litteSquare*(row/litteSquare)
 }
 
-func newValidateIfCanPutValue(row, col, value, size int, lines, columns, sectors []int) bool {
+func ValidateIfCanPutValue(row, col, value, size int, lines, columns, sectors []int) bool {
 	sector := getSectorByRowAndColumn(row, col, size)
 
 	return ((lines[row] | columns[col] | sectors[sector]) & value) == 0
@@ -35,7 +37,7 @@ func SolveRecursive(row, col int, board [][]int, size int, lines, columns, secto
 
 	isFull := true
 	for p := 0; p < size; p++ {
-		if lines[p] != 511 || columns[p] != 511 || sectors[p] != 511 {
+		if lines[p] != FULL_BIT_MASK || columns[p] != FULL_BIT_MASK || sectors[p] != FULL_BIT_MASK {
 			isFull = false
 			break
 		}
@@ -57,7 +59,7 @@ func SolveRecursive(row, col int, board [][]int, size int, lines, columns, secto
 
 	for v := 1; v <= size; v++ {
 		binValue := int(math.Pow(2, float64(v)-1.0))
-		if newValidateIfCanPutValue(row, col, binValue, size, lines, columns, sectors) {
+		if ValidateIfCanPutValue(row, col, binValue, size, lines, columns, sectors) {
 			board[row][col] = binValue
 			setVectorCell(row, col, binValue, size, lines, columns, sectors)
 			if SolveRecursive(row, col, board, size, lines, columns, sectors) {
@@ -91,8 +93,7 @@ func setVectorCell(row, col, binValue, size int, lines, columns, sectors []int) 
 }
 
 func removeVectorCell(row, col, binValue, size int, lines, columns, sectors []int) {
-	mask := 511
-	maskedValue := mask ^ binValue
+	maskedValue := FULL_BIT_MASK ^ binValue
 	sector := getSectorByRowAndColumn(row, col, size)
 
 	lines[row] &= maskedValue
@@ -102,13 +103,13 @@ func removeVectorCell(row, col, binValue, size int, lines, columns, sectors []in
 
 func main() {
 
-	numTries := 1
+	numTries := 10000
 
 	for i := 0; i < numTries; i++ {
 		Run()
 	}
 
-	// fmt.Println(times)
+	fmt.Println(times)
 	fmt.Printf("%vµs\n", utils.GetMean(times))
 
 }
@@ -138,8 +139,8 @@ func Solve(wg *sync.WaitGroup, id int) {
 	sectors := make([]int, size)
 
 	// board := setUpBoard(size, []int{3, 0, 6, 5, 0, 8, 4, 0, 0, 5, 2, 0, 0, 0, 0, 0, 0, 0, 0, 8, 7, 0, 0, 0, 0, 3, 1, 0, 0, 3, 0, 1, 0, 0, 8, 0, 9, 0, 0, 8, 6, 3, 0, 0, 5, 0, 5, 0, 0, 9, 0, 6, 0, 0, 1, 3, 0, 0, 0, 0, 2, 5, 0, 0, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 5, 2, 0, 6, 3, 0, 0})
-	// board := setUpBoard(size, []int{0, 0, 0, 0, 0, 5, 0, 6, 0, 0, 0, 5, 0, 6, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 4, 0, 0, 0, 8, 0, 1, 0, 0, 0, 2, 0, 0, 3, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 5, 0, 2, 1, 0, 3, 0, 0, 6, 0, 0, 1, 0, 4, 0, 0, 0, 2, 0, 0, 0, 0, 7, 6, 0, 0, 3, 0, 0, 4, 5, 0, 1})
-	board := setUpBoard(size, []int{0, 9, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 4, 8, 0, 0, 5, 0, 6, 9, 2, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 4, 2, 0, 0, 8, 0, 0, 0, 0, 8, 0, 7, 0, 0, 5, 0, 6, 1, 7, 0, 5, 9, 0, 4, 0, 4, 0, 0, 6, 0, 0, 5, 1, 2, 0, 0, 1, 0, 0, 0, 0, 6})
+	board := setUpBoard(size, []int{0, 0, 0, 0, 0, 5, 0, 6, 0, 0, 0, 5, 0, 6, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 4, 0, 0, 0, 8, 0, 1, 0, 0, 0, 2, 0, 0, 3, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 5, 0, 2, 1, 0, 3, 0, 0, 6, 0, 0, 1, 0, 4, 0, 0, 0, 2, 0, 0, 0, 0, 7, 6, 0, 0, 3, 0, 0, 4, 5, 0, 1})
+	// board := setUpBoard(size, []int{0, 9, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 4, 8, 0, 0, 5, 0, 6, 9, 2, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 4, 2, 0, 0, 8, 0, 0, 0, 0, 8, 0, 7, 0, 0, 5, 0, 6, 1, 7, 0, 5, 9, 0, 4, 0, 4, 0, 0, 6, 0, 0, 5, 1, 2, 0, 0, 1, 0, 0, 0, 0, 6})
 
 	buildVectors(board, size, lines, columns, sectors)
 	// printBoard(cellBoard, 0, size)

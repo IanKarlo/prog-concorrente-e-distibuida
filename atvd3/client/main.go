@@ -35,6 +35,7 @@ func main() {
 	}
 
 	mean := utils.GetMean(times)
+	fmt.Println(times)
 
 	fmt.Println(mean)
 }

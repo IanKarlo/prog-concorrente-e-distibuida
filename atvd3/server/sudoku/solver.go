@@ -1,0 +1,104 @@
+package sudoku
+
+import (
+	"fmt"
+	"math"
+	"math/rand"
+	"time"
+)
+
+var (
+	finished bool
+)
+
+const FULL_BIT_MASK = 511
+
+func SolveRecursive(row, col int, board [][]int, size int, lines, columns, sectors []int) bool {
+
+	isFull := true
+	for p := 0; p < size; p++ {
+		if lines[p] != FULL_BIT_MASK || columns[p] != FULL_BIT_MASK || sectors[p] != FULL_BIT_MASK {
+			isFull = false
+			break
+		}
+	}
+	if isFull {
+		return true
+	}
+
+	if col++; col == size {
+		col = 0
+		if row++; row == size {
+			row = 0
+		}
+	}
+
+	if board[row][col] != 0 {
+		return SolveRecursive(row, col, board, size, lines, columns, sectors)
+	}
+
+	for v := 1; v <= size; v++ {
+		binValue := int(math.Pow(2, float64(v)-1.0))
+		if ValidateIfCanPutValue(row, col, binValue, size, lines, columns, sectors) {
+			board[row][col] = binValue
+			SetVectorCell(row, col, binValue, size, lines, columns, sectors)
+			if SolveRecursive(row, col, board, size, lines, columns, sectors) {
+				return true
+			}
+			RemoveVectorCell(row, col, binValue, size, lines, columns, sectors)
+		}
+	}
+
+	board[row][col] = 0
+	return false
+}
+
+func Run() [][]int {
+	numRoutines := 5
+
+	finished = false
+
+	matrizChannel := make(chan [][]int)
+
+	for i := 0; i < numRoutines; i++ {
+		go Solve(&matrizChannel, i)
+	}
+
+	matrix := <-matrizChannel
+
+	return matrix
+}
+
+func Solve(channel *chan [][]int, id int) {
+
+	size := 9
+	lines := make([]int, size)
+	columns := make([]int, size)
+	sectors := make([]int, size)
+
+	// board := setUpBoard(size, []int{3, 0, 6, 5, 0, 8, 4, 0, 0, 5, 2, 0, 0, 0, 0, 0, 0, 0, 0, 8, 7, 0, 0, 0, 0, 3, 1, 0, 0, 3, 0, 1, 0, 0, 8, 0, 9, 0, 0, 8, 6, 3, 0, 0, 5, 0, 5, 0, 0, 9, 0, 6, 0, 0, 1, 3, 0, 0, 0, 0, 2, 5, 0, 0, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 5, 2, 0, 6, 3, 0, 0})
+	board := SetUpBoard(size, []int{0, 0, 0, 0, 0, 5, 0, 6, 0, 0, 0, 5, 0, 6, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 4, 0, 0, 0, 8, 0, 1, 0, 0, 0, 2, 0, 0, 3, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 5, 0, 2, 1, 0, 3, 0, 0, 6, 0, 0, 1, 0, 4, 0, 0, 0, 2, 0, 0, 0, 0, 7, 6, 0, 0, 3, 0, 0, 4, 5, 0, 1})
+	// board := setUpBoard(size, []int{0, 9, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 4, 8, 0, 0, 5, 0, 6, 9, 2, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 4, 2, 0, 0, 8, 0, 0, 0, 0, 8, 0, 7, 0, 0, 5, 0, 6, 1, 7, 0, 5, 9, 0, 4, 0, 4, 0, 0, 6, 0, 0, 5, 1, 2, 0, 0, 1, 0, 0, 0, 0, 6})
+
+	BuildVectors(board, size, lines, columns, sectors)
+
+	i, j, _ := getRandomValues(size)
+
+	if SolveRecursive(i, j, board, size, lines, columns, sectors) {
+		if !finished {
+			finished = true
+		}
+
+		*channel <- board
+	} else {
+		fmt.Println("Deu ruimm")
+	}
+}
+
+func getRandomValues(size int) (int, int, int) {
+	rand.Seed(time.Now().UnixNano())
+	i := rand.Intn(size - 1)
+	j := rand.Intn(size - 1)
+	value := rand.Intn(size-1) + 1
+	return i, j, value
+}

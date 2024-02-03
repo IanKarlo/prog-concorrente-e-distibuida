@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-var (
-	finished bool
-)
-
 const FULL_BIT_MASK = 511
 
-func SolveRecursive(row, col int, board [][]int, size int, lines, columns, sectors []int) bool {
+func SolveRecursive(row, col int, board [][]int, size int, lines, columns, sectors []int, signalChannel *chan int) bool {
 	//tenta ler do canal bufferizado, se ler algo ele se encerra, se não ele continua
+	if len(*signalChannel) != 0 {
+		return false
+	}
+
 	isFull := true
 	for p := 0; p < size; p++ {
 		if lines[p] != FULL_BIT_MASK || columns[p] != FULL_BIT_MASK || sectors[p] != FULL_BIT_MASK {
@@ -34,7 +34,7 @@ func SolveRecursive(row, col int, board [][]int, size int, lines, columns, secto
 	}
 
 	if board[row][col] != 0 {
-		return SolveRecursive(row, col, board, size, lines, columns, sectors)
+		return SolveRecursive(row, col, board, size, lines, columns, sectors, signalChannel)
 	}
 
 	for v := 1; v <= size; v++ {
@@ -42,7 +42,7 @@ func SolveRecursive(row, col int, board [][]int, size int, lines, columns, secto
 		if ValidateIfCanPutValue(row, col, binValue, size, lines, columns, sectors) {
 			board[row][col] = binValue
 			SetVectorCell(row, col, binValue, size, lines, columns, sectors)
-			if SolveRecursive(row, col, board, size, lines, columns, sectors) {
+			if SolveRecursive(row, col, board, size, lines, columns, sectors, signalChannel) {
 				return true
 			}
 			RemoveVectorCell(row, col, binValue, size, lines, columns, sectors)
@@ -56,12 +56,12 @@ func SolveRecursive(row, col int, board [][]int, size int, lines, columns, secto
 func Run() [][]int {
 	numRoutines := 5
 
-	finished = false
-
 	matrizChannel := make(chan [][]int)
+	signalChannel := make(chan int, numRoutines)
 
+	fmt.Println("-----------")
 	for i := 0; i < numRoutines; i++ {
-		go Solve(&matrizChannel, i)
+		go Solve(&matrizChannel, &signalChannel, i)
 	}
 
 	matrix := <-matrizChannel
@@ -69,7 +69,7 @@ func Run() [][]int {
 	return matrix
 }
 
-func Solve(channel *chan [][]int, id int) {
+func Solve(channel *chan [][]int, signalChannel *chan int, id int) {
 
 	size := 9
 	lines := make([]int, size)
@@ -84,15 +84,13 @@ func Solve(channel *chan [][]int, id int) {
 
 	i, j, _ := getRandomValues(size)
 
-	if SolveRecursive(i, j, board, size, lines, columns, sectors) {
-		if !finished {
-			finished = true
-		}
-
+	if SolveRecursive(i, j, board, size, lines, columns, sectors, signalChannel) {
+		fmt.Println("Deu bom", id)
+		*signalChannel <- 1
 		*channel <- board
 		//manda informações de termino pro canal bufferizado
 	} else {
-		fmt.Println("Deu ruimm")
+		fmt.Println("Deu ruimm", id)
 	}
 }
 

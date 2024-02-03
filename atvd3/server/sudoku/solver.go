@@ -3,7 +3,6 @@ package sudoku
 import (
 	"math"
 	"math/rand"
-	"time"
 )
 
 const FULL_BIT_MASK = 511
@@ -59,6 +58,7 @@ func Run(request int) [][]int {
 	signalChannel := make(chan int, numRoutines)
 
 	// fmt.Println("-----------", request)
+	rand.Seed(42)
 	for i := 0; i < numRoutines; i++ {
 		go Solve(&matrizChannel, &signalChannel, i)
 	}
@@ -80,7 +80,6 @@ func Solve(channel *chan [][]int, signalChannel *chan int, id int) {
 	// board := setUpBoard(size, []int{0, 9, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 4, 8, 0, 0, 5, 0, 6, 9, 2, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 4, 2, 0, 0, 8, 0, 0, 0, 0, 8, 0, 7, 0, 0, 5, 0, 6, 1, 7, 0, 5, 9, 0, 4, 0, 4, 0, 0, 6, 0, 0, 5, 1, 2, 0, 0, 1, 0, 0, 0, 0, 6})
 
 	BuildVectors(board, size, lines, columns, sectors)
-
 	i, j, _ := getRandomValues(size)
 
 	if SolveRecursive(i, j, board, size, lines, columns, sectors, signalChannel) {
@@ -94,7 +93,7 @@ func Solve(channel *chan [][]int, signalChannel *chan int, id int) {
 }
 
 func getRandomValues(size int) (int, int, int) {
-	rand.Seed(time.Now().UnixNano())
+	// rand.Seed(time.Now().UnixNano())
 	i := rand.Intn(size - 1)
 	j := rand.Intn(size - 1)
 	value := rand.Intn(size-1) + 1

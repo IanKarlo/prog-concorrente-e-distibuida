@@ -9,8 +9,7 @@ import (
 	"time"
 )
 
-func RunUDPClient(numRequests int) []int64 {
-
+func RunUDPClient(numRequests int, board []int) []int64 {
 	resBuffer := make([]byte, 1024)
 	times := make([]int64, 0)
 
@@ -34,9 +33,16 @@ func RunUDPClient(numRequests int) []int64 {
 
 		start := time.Now()
 
-		req := []byte("Qlqr coisa")
+		jsonData, err := json.Marshal(board)
 
-		_, err = conn.Write(req)
+		if err != nil {
+			fmt.Println("Error while json.Marshal")
+			os.Exit(1)
+		}
+
+		jsonData = append(jsonData, '\n')
+
+		_, err = conn.Write(jsonData)
 
 		if err != nil {
 			fmt.Println("Error while accepting connection")

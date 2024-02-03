@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func RunTCPClient(numRequests int) []int64 {
+func RunTCPClient(numRequests int, board []int) []int64 {
 	times := make([]int64, 0)
 
 	r, err := net.ResolveTCPAddr("tcp", "localhost:9091")
@@ -32,9 +32,16 @@ func RunTCPClient(numRequests int) []int64 {
 
 		start := time.Now()
 
-		req := "Qlqr coisa"
+		jsonData, err := json.Marshal(board)
 
-		_, err = fmt.Fprintf(conn, req+"\n")
+		if err != nil {
+			fmt.Println("Error while json.Marshal")
+			os.Exit(1)
+		}
+
+		jsonData = append(jsonData, '\n')
+
+		_, err = fmt.Fprintf(conn, string(jsonData))
 
 		if err != nil {
 			fmt.Println("Error while accepting connection")

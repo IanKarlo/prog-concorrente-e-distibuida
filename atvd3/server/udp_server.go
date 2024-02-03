@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"server/sudoku"
+	"server/utils"
 )
 
 func StartUDPServer(maxIter int) {
@@ -35,7 +36,12 @@ func StartUDPServer(maxIter int) {
 			os.Exit(1)
 		}
 
-		res := sudoku.Run(i)
+		limitIndex := utils.GetEndOfBuffer(req)
+
+		var matrix []int
+		err = json.Unmarshal([]byte(req[:limitIndex]), &matrix)
+
+		res := sudoku.Run(i, matrix)
 
 		jsonData, err := json.Marshal(res)
 

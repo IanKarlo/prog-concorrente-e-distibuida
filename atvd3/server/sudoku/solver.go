@@ -51,7 +51,7 @@ func SolveRecursive(row, col int, board [][]int, size int, lines, columns, secto
 	return false
 }
 
-func Run(request int) [][]int {
+func Run(request int, board []int) [][]int {
 	numRoutines := 5
 
 	matrizChannel := make(chan [][]int)
@@ -60,7 +60,7 @@ func Run(request int) [][]int {
 	// fmt.Println("-----------", request)
 	rand.Seed(42)
 	for i := 0; i < numRoutines; i++ {
-		go Solve(&matrizChannel, &signalChannel, i)
+		go Solve(&matrizChannel, &signalChannel, board, i)
 	}
 
 	matrix := <-matrizChannel
@@ -68,16 +68,14 @@ func Run(request int) [][]int {
 	return matrix
 }
 
-func Solve(channel *chan [][]int, signalChannel *chan int, id int) {
+func Solve(channel *chan [][]int, signalChannel *chan int, boardArray []int, id int) {
 
 	size := 9
 	lines := make([]int, size)
 	columns := make([]int, size)
 	sectors := make([]int, size)
 
-	// board := setUpBoard(size, []int{3, 0, 6, 5, 0, 8, 4, 0, 0, 5, 2, 0, 0, 0, 0, 0, 0, 0, 0, 8, 7, 0, 0, 0, 0, 3, 1, 0, 0, 3, 0, 1, 0, 0, 8, 0, 9, 0, 0, 8, 6, 3, 0, 0, 5, 0, 5, 0, 0, 9, 0, 6, 0, 0, 1, 3, 0, 0, 0, 0, 2, 5, 0, 0, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 5, 2, 0, 6, 3, 0, 0})
-	board := SetUpBoard(size, []int{0, 0, 0, 0, 0, 5, 0, 6, 0, 0, 0, 5, 0, 6, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 4, 0, 0, 0, 8, 0, 1, 0, 0, 0, 2, 0, 0, 3, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 5, 0, 2, 1, 0, 3, 0, 0, 6, 0, 0, 1, 0, 4, 0, 0, 0, 2, 0, 0, 0, 0, 7, 6, 0, 0, 3, 0, 0, 4, 5, 0, 1})
-	// board := setUpBoard(size, []int{0, 9, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 4, 8, 0, 0, 5, 0, 6, 9, 2, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 4, 2, 0, 0, 8, 0, 0, 0, 0, 8, 0, 7, 0, 0, 5, 0, 6, 1, 7, 0, 5, 9, 0, 4, 0, 4, 0, 0, 6, 0, 0, 5, 1, 2, 0, 0, 1, 0, 0, 0, 0, 6})
+	board := SetUpBoard(size, boardArray)
 
 	BuildVectors(board, size, lines, columns, sectors)
 	i, j, _ := getRandomValues(size)

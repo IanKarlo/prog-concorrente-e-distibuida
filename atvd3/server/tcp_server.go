@@ -34,14 +34,17 @@ func StartTCPServer(maxIter int) {
 
 	for i := 0; i < maxIter; i++ {
 
-		_, err := bufio.NewReader(conn).ReadString('\n')
+		req, err := bufio.NewReader(conn).ReadString('\n')
 
 		if err != nil {
 			fmt.Println("Error while accepting connection")
 			os.Exit(1)
 		}
 
-		res := sudoku.Run(i)
+		var matrix []int
+		err = json.Unmarshal([]byte(req), &matrix)
+
+		res := sudoku.Run(i, matrix)
 
 		jsonData, err := json.Marshal(res)
 

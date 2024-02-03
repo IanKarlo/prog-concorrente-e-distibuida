@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"time"
 )
 
-func RunUDPClient() {
+func RunUDPClient(numRequests int) []int64 {
 
 	resBuffer := make([]byte, 1024)
+	times := make([]int64, 0)
 
 	addr, err := net.ResolveUDPAddr("udp", "localhost:9091")
 
@@ -26,31 +28,46 @@ func RunUDPClient() {
 		os.Exit(1)
 	}
 
-	req := []byte("Qlqr coisa")
+	requests := 0
 
-	_, err = conn.Write(req)
+	for requests < numRequests {
 
-	if err != nil {
-		fmt.Println("Error while accepting connection")
-		os.Exit(1)
+		start := time.Now()
+
+		req := []byte("Qlqr coisa")
+
+		_, err = conn.Write(req)
+
+		if err != nil {
+			fmt.Println("Error while accepting connection")
+			os.Exit(1)
+		}
+
+		_, _, err = conn.ReadFromUDP(resBuffer)
+
+		if err != nil {
+			fmt.Println("Error while accepting connection")
+			os.Exit(1)
+		}
+
+		limitIndex := utils.GetEndOfBuffer(resBuffer)
+
+		var matrix [][]int
+		err = json.Unmarshal([]byte(resBuffer[:limitIndex]), &matrix)
+		if err != nil {
+			fmt.Println(string(resBuffer))
+			fmt.Println("Error:", err)
+			panic(err)
+		}
+
+		// utils.PrintBoard(matrix, 9)
+
+		end := time.Now()
+
+		times = append(times, end.Sub(start).Microseconds())
+
+		requests++
 	}
 
-	_, _, err = conn.ReadFromUDP(resBuffer)
-
-	if err != nil {
-		fmt.Println("Error while accepting connection")
-		os.Exit(1)
-	}
-
-	limitIndex := utils.GetEndOfBuffer(resBuffer)
-
-	var matrix [][]int
-	err = json.Unmarshal([]byte(resBuffer[:limitIndex]), &matrix)
-	if err != nil {
-		fmt.Println(string(resBuffer))
-		fmt.Println("Error:", err)
-		return
-	}
-
-	utils.PrintBoard(matrix, 9)
+	return times
 }

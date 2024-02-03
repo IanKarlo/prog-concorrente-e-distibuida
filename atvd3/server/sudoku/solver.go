@@ -14,7 +14,7 @@ var (
 const FULL_BIT_MASK = 511
 
 func SolveRecursive(row, col int, board [][]int, size int, lines, columns, sectors []int) bool {
-
+	//tenta ler do canal bufferizado, se ler algo ele se encerra, se não ele continua
 	isFull := true
 	for p := 0; p < size; p++ {
 		if lines[p] != FULL_BIT_MASK || columns[p] != FULL_BIT_MASK || sectors[p] != FULL_BIT_MASK {
@@ -90,6 +90,7 @@ func Solve(channel *chan [][]int, id int) {
 		}
 
 		*channel <- board
+		//manda informações de termino pro canal bufferizado
 	} else {
 		fmt.Println("Deu ruimm")
 	}

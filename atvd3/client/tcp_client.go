@@ -2,14 +2,16 @@ package main
 
 import (
 	"bufio"
-	"client/utils"
 	"encoding/json"
 	"fmt"
 	"net"
 	"os"
+	"time"
 )
 
-func RunTCPClient() {
+func RunTCPClient(numRequests int) []int64 {
+	times := make([]int64, 0)
+
 	r, err := net.ResolveTCPAddr("tcp", "localhost:9091")
 
 	if err != nil {
@@ -24,28 +26,43 @@ func RunTCPClient() {
 		os.Exit(1)
 	}
 
-	req := "Qlqr coisa"
+	requests := 0
 
-	_, err = fmt.Fprintf(conn, req+"\n")
+	for requests < numRequests {
 
-	if err != nil {
-		fmt.Println("Error while accepting connection")
-		os.Exit(1)
+		start := time.Now()
+
+		req := "Qlqr coisa"
+
+		_, err = fmt.Fprintf(conn, req+"\n")
+
+		if err != nil {
+			fmt.Println("Error while accepting connection")
+			os.Exit(1)
+		}
+
+		res, err := bufio.NewReader(conn).ReadString('\n')
+
+		if err != nil {
+			fmt.Println("Error while accepting connection")
+			os.Exit(1)
+		}
+
+		var matrix [][]int
+		err = json.Unmarshal([]byte(res), &matrix)
+		if err != nil {
+			fmt.Println("Error:", err)
+			panic(err)
+		}
+
+		// utils.PrintBoard(matrix, 9)
+
+		end := time.Now()
+
+		times = append(times, end.Sub(start).Microseconds())
+
+		requests++
 	}
 
-	res, err := bufio.NewReader(conn).ReadString('\n')
-
-	if err != nil {
-		fmt.Println("Error while accepting connection")
-		os.Exit(1)
-	}
-
-	var matrix [][]int
-	err = json.Unmarshal([]byte(res), &matrix)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-
-	utils.PrintBoard(matrix, 9)
+	return times
 }

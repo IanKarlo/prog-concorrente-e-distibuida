@@ -52,14 +52,13 @@ func StartUDPServer(maxIter int) {
 			fmt.Println("Error while accepting connection")
 			os.Exit(1)
 		}
+	}
 
-		err = conn.Close()
+	err = conn.Close()
 
-		if err != nil {
-			fmt.Println("Error while accepting connection")
-			os.Exit(1)
-		}
-
+	if err != nil {
+		fmt.Println("Error while accepting connection")
+		os.Exit(1)
 	}
 
 }

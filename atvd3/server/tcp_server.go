@@ -25,22 +25,21 @@ func StartTCPServer(maxIter int) {
 		os.Exit(1)
 	}
 
+	conn, err := listener.Accept()
+
+	if err != nil {
+		fmt.Println("Error while accepting connection")
+		os.Exit(1)
+	}
+
 	for i := 0; i < maxIter; i++ {
-		conn, err := listener.Accept()
+
+		_, err := bufio.NewReader(conn).ReadString('\n')
 
 		if err != nil {
 			fmt.Println("Error while accepting connection")
 			os.Exit(1)
 		}
-
-		req, err := bufio.NewReader(conn).ReadString('\n')
-
-		if err != nil {
-			fmt.Println("Error while accepting connection")
-			os.Exit(1)
-		}
-
-		fmt.Println("Request received:", req)
 
 		res := sudoku.Run()
 
@@ -59,14 +58,13 @@ func StartTCPServer(maxIter int) {
 			fmt.Println("Error while accepting connection")
 			os.Exit(1)
 		}
+	}
 
-		err = conn.Close()
+	err = conn.Close()
 
-		if err != nil {
-			fmt.Println("Error while accepting connection")
-			os.Exit(1)
-		}
-
+	if err != nil {
+		fmt.Println("Error while accepting connection")
+		os.Exit(1)
 	}
 
 }

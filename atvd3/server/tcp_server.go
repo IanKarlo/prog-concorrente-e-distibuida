@@ -41,7 +41,7 @@ func StartTCPServer(maxIter int) {
 			os.Exit(1)
 		}
 
-		res := sudoku.Run()
+		res := sudoku.Run(i)
 
 		jsonData, err := json.Marshal(res)
 

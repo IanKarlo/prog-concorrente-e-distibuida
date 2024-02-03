@@ -1,7 +1,6 @@
 package sudoku
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -10,7 +9,7 @@ import (
 const FULL_BIT_MASK = 511
 
 func SolveRecursive(row, col int, board [][]int, size int, lines, columns, sectors []int, signalChannel *chan int) bool {
-	//tenta ler do canal bufferizado, se ler algo ele se encerra, se não ele continua
+	// tenta ler do canal bufferizado, se ler algo ele se encerra, se não ele continua
 	if len(*signalChannel) != 0 {
 		return false
 	}
@@ -53,13 +52,13 @@ func SolveRecursive(row, col int, board [][]int, size int, lines, columns, secto
 	return false
 }
 
-func Run() [][]int {
+func Run(request int) [][]int {
 	numRoutines := 5
 
 	matrizChannel := make(chan [][]int)
 	signalChannel := make(chan int, numRoutines)
 
-	fmt.Println("-----------")
+	// fmt.Println("-----------", request)
 	for i := 0; i < numRoutines; i++ {
 		go Solve(&matrizChannel, &signalChannel, i)
 	}
@@ -85,12 +84,12 @@ func Solve(channel *chan [][]int, signalChannel *chan int, id int) {
 	i, j, _ := getRandomValues(size)
 
 	if SolveRecursive(i, j, board, size, lines, columns, sectors, signalChannel) {
-		fmt.Println("Deu bom", id)
+		// fmt.Println("Sucesso :)", id)
 		*signalChannel <- 1
 		*channel <- board
 		//manda informações de termino pro canal bufferizado
 	} else {
-		fmt.Println("Deu ruimm", id)
+		// fmt.Println("Encerrou sem sucesso", id)
 	}
 }
 

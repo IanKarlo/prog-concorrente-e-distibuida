@@ -7,3 +7,9 @@ type Request struct {
 type Reply struct {
 	R [][]int
 }
+
+type CloseRequest bool
+
+type CloseReply struct {
+	Received bool
+}

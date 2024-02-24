@@ -1,13 +1,10 @@
 package impl
 
 import (
-	"atvd4/common"
 	"fmt"
 	"math"
 	"math/rand"
 )
-
-type SudokuSolver struct{}
 
 const FULL_BIT_MASK = 511
 
@@ -55,30 +52,6 @@ func SolveRecursive(row, col int, board [][]int, size int, lines, columns, secto
 	return false
 }
 
-func (s *SudokuSolver) Run(req common.Request, rep *common.Reply) error {
-
-	board := req.Board
-
-	numRoutines := 5
-
-	matrizChannel := make(chan [][]int)
-	signalChannel := make(chan int, numRoutines)
-
-	// fmt.Println("-----------", request)
-	rand.Seed(42)
-	for i := 0; i < numRoutines; i++ {
-		go Solve(&matrizChannel, &signalChannel, board, i)
-	}
-
-	matrix := <-matrizChannel
-
-	// PrintBoard(matrix, 9)
-
-	rep.R = matrix
-
-	return nil
-}
-
 func Solve(channel *chan [][]int, signalChannel *chan int, boardArray []int, id int) {
 
 	size := 9
@@ -96,8 +69,6 @@ func Solve(channel *chan [][]int, signalChannel *chan int, boardArray []int, id 
 		*signalChannel <- 1
 		*channel <- board
 		//manda informações de termino pro canal bufferizado
-	} else {
-		// fmt.Println("Encerrou sem sucesso", id)
 	}
 }
 

@@ -1,3 +1,5 @@
 */**/main
 */**/bin
 *.zip
+
+*_results.txt

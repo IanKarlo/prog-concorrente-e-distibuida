@@ -2,7 +2,6 @@ package implementations
 
 import (
 	"atvd4/server/impl"
-	"fmt"
 	"net"
 	"net/http"
 	"net/rpc"
@@ -23,6 +22,5 @@ func BuildHTTPServer() {
 		panic(err)
 	}
 
-	fmt.Printf("Server running on port %d...\n", 5555)
 	http.Serve(listener, nil)
 }

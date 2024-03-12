@@ -16,7 +16,7 @@ func GetConnectionSting() string {
 	return fmt.Sprintf("amqp://%s:%s@localhost:5672/", amqpUser, amqpPassword)
 }
 
-func RandomString(l int) string {
+func RandomId(l int) string {
 	bytes := make([]byte, l)
 	for i := 0; i < l; i++ {
 		bytes[i] = byte(RandInt(65, 90))

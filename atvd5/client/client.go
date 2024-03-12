@@ -56,7 +56,7 @@ func runClient(boardNumber int, iterations int) {
 		msgRequestBytes, err := json.Marshal(msgRequest)
 		common.HandleError(err, "Failed to serialize message")
 
-		correlationID := common.RandomString(32)
+		correlationID := common.RandomId(32)
 
 		err = ch.Publish(
 			"",

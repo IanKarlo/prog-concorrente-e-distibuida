@@ -3,7 +3,6 @@ package impl
 import (
 	"atvd5/common"
 	"math/rand"
-	"os"
 )
 
 type SudokuSolver struct{}
@@ -28,14 +27,4 @@ func (s *SudokuSolver) Run(req common.Request) [][]int {
 	// PrintBoard(matrix, 9)
 
 	return matrix
-}
-
-func (s *SudokuSolver) Close(req common.CloseRequest, rep *common.CloseReply) error {
-
-	if req {
-		rep.Received = true
-		os.Exit(1)
-	}
-
-	return nil
 }
